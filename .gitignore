@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+
+# Environment files: commit only .env.example
+.env
+.env.*
+!.env.example
+*.local
+
+# Build output
+dist/
+dist-ssr/
+web-build/
+*.tsbuildinfo
+
+# Expo / React Native
+.expo/
+expo-env.d.ts
+.metro-health-check*
+.kotlin/
+*.orig.*
+
+# Generated native projects (Expo regenerates them from app.json)
+mobile/ios/
+mobile/android/
+
+# Signing keys and certificates: never commit
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# Server: Java
+target/
+build/
+*.class
+.gradle/
+
+# Server: Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.sw?
+.DS_Store
+Thumbs.db
+~$*

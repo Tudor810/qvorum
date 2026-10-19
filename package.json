@@ -1,0 +1,14 @@
+{
+  "name": "qvorum",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "web",
+    "mobile"
+  ],
+  "scripts": {
+    "web": "npm run dev --workspace web",
+    "mobile": "npm run start --workspace mobile",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
