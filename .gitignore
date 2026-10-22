@@ -38,6 +38,13 @@ target/
 build/
 *.class
 .gradle/
+.mvn/wrapper/maven-wrapper.jar
+# Eclipse / VS Code Java metadata
+.classpath
+.project
+.settings/
+.factorypath
+server/bin/
 
 # Server: Python
 __pycache__/
@@ -55,6 +62,8 @@ yarn-error.log*
 .vscode/*
 !.vscode/extensions.json
 .idea/
+*.iml
+server/out/
 *.suo
 *.sw?
 .DS_Store

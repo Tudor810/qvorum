@@ -39,13 +39,14 @@ qvorum/
 
 - **Web:** React 19, TypeScript, Vite, Oxlint
 - **Mobile:** React Native, Expo, Expo Router, TypeScript
-- **Server:** see [`server/README.md`](server/README.md)
+- **Server:** Java, Spring Boot, Spring Data JPA (see [`server/README.md`](server/README.md))
 
 ## Getting started
 
 ### Prerequisites
 
 - Node.js 22 or newer, and npm
+- For the server: JDK 21 or newer and PostgreSQL (see [`server/README.md`](server/README.md))
 - For the mobile app: an Android phone with [Expo Go](https://expo.dev/go), or an Android emulator
 
 ### Install
