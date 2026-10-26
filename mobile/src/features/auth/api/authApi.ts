@@ -3,6 +3,6 @@ import { login } from '@qvorum/shared';
 import { api } from '@/lib/api';
 import type { LoginCredentials } from '../types';
 
-export function loginRequest({ email, parola }: LoginCredentials) {
-  return login(api, email, parola);
+export function loginRequest({ email, password }: LoginCredentials) {
+  return login(api, email, password);
 }

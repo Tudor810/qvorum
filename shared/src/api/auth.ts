@@ -1,7 +1,7 @@
-// Exemplu de fișier de endpoint-uri; căile se aliniază cu serverul.
-import type { RaspunsAutentificare } from '../types'
+// Endpoint functions for one feature; the paths match the server controllers.
+import type { AuthResponse } from '../types'
 import type { ApiClient } from './client'
 
-export function login(api: ApiClient, email: string, parola: string) {
-  return api.post<RaspunsAutentificare>('/auth/login', { email, parola })
+export function login(api: ApiClient, email: string, password: string) {
+  return api.post<AuthResponse>('/auth/login', { email, password })
 }

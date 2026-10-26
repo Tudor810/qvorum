@@ -1,7 +1,7 @@
-export const ROLURI = {
-  LOCATAR: 'LOCATAR',
+export const ROLES = {
+  RESIDENT: 'RESIDENT',
   ADMINISTRATOR: 'ADMINISTRATOR',
-  PRESEDINTE: 'PRESEDINTE',
+  PRESIDENT: 'PRESIDENT',
 } as const
 
-export type Rol = (typeof ROLURI)[keyof typeof ROLURI]
+export type Role = (typeof ROLES)[keyof typeof ROLES]

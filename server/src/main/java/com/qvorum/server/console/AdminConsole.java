@@ -11,7 +11,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 /**
- * console: the system administrator's text interface (UC21-UC23). Starts once the server is
+ * console: the system administrator's text interface (UC31-UC33). Starts once the server is
  * ready and reads commands from standard input on its own thread, so HTTP requests keep being
  * served while it waits for input.
  */

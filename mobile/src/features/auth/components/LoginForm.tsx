@@ -7,7 +7,7 @@ import { useLogin } from '../hooks/useLogin';
 export function LoginForm() {
   const { loading, error, submit } = useLogin();
   const [email, setEmail] = useState('');
-  const [parola, setParola] = useState('');
+  const [password, setPassword] = useState('');
 
   return (
     <View style={styles.form}>
@@ -21,16 +21,16 @@ export function LoginForm() {
       />
       <TextInput
         style={styles.input}
-        placeholder={strings.auth.parola}
-        value={parola}
-        onChangeText={setParola}
+        placeholder={strings.auth.password}
+        value={password}
+        onChangeText={setPassword}
         secureTextEntry
       />
       {error && <Text style={styles.error}>{error}</Text>}
       <Button
-        title={strings.auth.conectare}
+        title={strings.auth.logIn}
         disabled={loading}
-        onPress={() => void submit({ email, parola })}
+        onPress={() => void submit({ email, password })}
       />
     </View>
   );

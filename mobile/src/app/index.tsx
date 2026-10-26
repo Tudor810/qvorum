@@ -5,7 +5,7 @@ import { LoginForm } from '@/features/auth';
 export default function Index() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{strings.app.nume}</Text>
+      <Text style={styles.title}>{strings.app.name}</Text>
       <LoginForm />
     </View>
   );

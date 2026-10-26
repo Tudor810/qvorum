@@ -1,21 +1,21 @@
-// Toate textele vizibile stau aici, ca să poată fi traduse ulterior fără refactorizare.
+// All visible texts live here, so they can be reviewed in one place.
 export const strings = {
   app: {
-    nume: 'Qvorum',
+    name: 'Qvorum',
   },
-  comun: {
-    salveaza: 'Salvează',
-    anuleaza: 'Anulează',
-    sterge: 'Șterge',
-    inapoi: 'Înapoi',
-    seIncarca: 'Se încarcă…',
-    eroareGenerala: 'A apărut o eroare. Încearcă din nou.',
+  common: {
+    save: 'Save',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    back: 'Back',
+    loading: 'Loading…',
+    genericError: 'Something went wrong. Please try again.',
   },
   auth: {
-    titlu: 'Autentificare',
+    title: 'Log in',
     email: 'Email',
-    parola: 'Parolă',
-    conectare: 'Conectare',
-    deconectare: 'Deconectare',
+    password: 'Password',
+    logIn: 'Log in',
+    logOut: 'Log out',
   },
 } as const

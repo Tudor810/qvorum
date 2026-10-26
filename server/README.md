@@ -10,7 +10,7 @@ Qvorum has three applications:
 
 | Application | Who uses it | Where it runs |
 | --- | --- | --- |
-| Mobile app | residents (locatari) | Android phone |
+| Mobile app | residents | Android phone |
 | Web app | building administrator, association president | browser |
 | **Server** | both apps above + the system administrator | a computer / laptop |
 
@@ -21,7 +21,7 @@ The two client apps only **show** data and **collect** input. They do not store 
 3. **It authenticates users.** It checks email and password at login and gives the client a token (JWT). Every later request carries that token, so the server knows who is asking.
 4. **It talks to external services.** Online payments go through Stripe, and repair requests are forwarded to service companies by email. API keys for these services must stay secret, so only the server can hold them.
 5. **It notifies clients.** When something relevant happens (a new announcement, a status change of an issue report), the server pushes a notification to the connected clients.
-6. **It offers a console for the system administrator.** The project requirements ask for a console application. While the server runs, the system administrator can type commands in its terminal to see the server state (UC21), list and force-disconnect connected clients (UC22), and view the request history and save it to a CSV file (UC23).
+6. **It offers a console for the system administrator.** The project requirements ask for a console application. While the server runs, the system administrator can type commands in its terminal to see the server state (UC31), list and force-disconnect connected clients (UC32), and view the request history and save it to a CSV file (UC33).
 
 The clients and the server communicate over **HTTP with JSON**: the client sends a request such as `POST /auth/login` with a JSON body, the server answers with a status code (200 OK, 401 Unauthorized, …) and a JSON body. This style of API is called **REST**.
 
@@ -47,11 +47,11 @@ The most important idea in Spring: **you do not create your main objects with `n
 ```java
 @Service
 public class AuthService {
-    private final UtilizatorRepository utilizatorRepository;
+    private final UserRepository userRepository;
 
-    // Spring sees that AuthService needs a UtilizatorRepository and passes the bean in.
-    public AuthService(UtilizatorRepository utilizatorRepository) {
-        this.utilizatorRepository = utilizatorRepository;
+    // Spring sees that AuthService needs a UserRepository and passes the bean in.
+    public AuthService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 }
 ```
@@ -82,8 +82,8 @@ Because Spring scans sub-packages of `com.qvorum.server`, **every class must be 
 **JPA** maps Java classes to database tables (an *entity* = a table, an *object* = a row). **Spring Data JPA** goes further: you only write an interface, and Spring generates the implementation from the method names:
 
 ```java
-public interface UtilizatorRepository extends JpaRepository<Utilizator, Long> {
-    Optional<Utilizator> findByEmail(String email);   // SELECT * FROM utilizator WHERE email = ?
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByEmail(String email);   // SELECT * FROM users WHERE email = ?
 }
 ```
 
@@ -167,7 +167,7 @@ The reasons for this split:
 
 #### `controller/`: the HTTP entry points
 
-One class per area of the API (`AuthController`, later `AnuntController`, `FacturaController`, …). A controller method:
+One class per area of the API (`AuthController`, later `AnnouncementController`, `InvoiceController`, …). A controller method:
 - declares the URL and HTTP method (`@PostMapping("/login")`);
 - receives input (`@RequestBody`, `@PathVariable`, `@RequestParam`) as DTOs and validates it with `@Valid`;
 - calls **one** service method and returns its result.
@@ -189,25 +189,25 @@ This is where the application really lives: calculating the maintenance list fro
 
 One interface per entity, extending `JpaRepository<Entity, IdType>`. Usually you only declare method names (`findByEmail`, `findByApartamentIdOrderByDataDesc`, …). For complex queries you can write `@Query("…")` on a method.
 
-*Example:* [`UtilizatorRepository`](src/main/java/com/qvorum/server/repository/UtilizatorRepository.java).
+*Example:* [`UserRepository`](src/main/java/com/qvorum/server/repository/UserRepository.java).
 
 #### `model/`: the entities
 
-One class per database table, matching the ERD. Fields map to columns (`parolaHash` → `parola_hash` automatically), relationships are expressed with `@ManyToOne`, `@OneToMany`, `@ElementCollection`. Enums that are stored in the database (like `Rol`) also live here.
+One class per database table, matching the ERD. Fields map to columns (`passwordHash` → `password_hash` automatically), relationships are expressed with `@ManyToOne`, `@OneToMany`, `@ElementCollection`. Enums that are stored in the database (like `Role`) also live here.
 
-*Example:* [`Utilizator`](src/main/java/com/qvorum/server/model/Utilizator.java) and [`Rol`](src/main/java/com/qvorum/server/model/Rol.java).
+*Example:* [`User`](src/main/java/com/qvorum/server/model/User.java) and [`Role`](src/main/java/com/qvorum/server/model/Role.java).
 
 #### `dto/`: what the clients send and receive
 
 **DTO** = Data Transfer Object: a small class (here a Java `record`) that describes exactly the JSON of a request or response. Why not return entities directly?
-- **Security:** `Utilizator` contains the password hash; `UtilizatorDto` does not. With DTOs, nothing leaks by accident.
+- **Security:** `User` contains the password hash; `UserDto` does not. With DTOs, nothing leaks by accident.
 - **A stable API:** the database can change (a column is split, a table is added) without changing the JSON the apps expect.
 - **No serialization problems:** entities often reference each other (an apartment has residents, a resident has an apartment). Converting them straight to JSON can loop forever or trigger many hidden queries.
 - **One shape per use case:** creating an announcement needs different fields than listing announcements.
 
 The DTOs must match the TypeScript types in [`shared/src/types`](../shared/src/types) **field by field**, because the web and mobile apps read exactly those names. When you add or rename a DTO field, the matching TypeScript type changes too.
 
-*Examples:* [`LoginRequest`](src/main/java/com/qvorum/server/dto/LoginRequest.java), [`LoginResponse`](src/main/java/com/qvorum/server/dto/LoginResponse.java), [`UtilizatorDto`](src/main/java/com/qvorum/server/dto/UtilizatorDto.java) (with a `from(entity)` method that does the conversion).
+*Examples:* [`LoginRequest`](src/main/java/com/qvorum/server/dto/LoginRequest.java), [`LoginResponse`](src/main/java/com/qvorum/server/dto/LoginResponse.java), [`UserDto`](src/main/java/com/qvorum/server/dto/UserDto.java) (with a `from(entity)` method that does the conversion).
 
 #### `security/`: authentication and authorization
 
@@ -220,10 +220,10 @@ The DTOs must match the TypeScript types in [`shared/src/types`](../shared/src/t
 Services throw [`ApiException`](src/main/java/com/qvorum/server/exception/ApiException.java) with an HTTP status and a message. [`GlobalExceptionHandler`](src/main/java/com/qvorum/server/exception/GlobalExceptionHandler.java) catches it anywhere in the application and returns:
 
 ```json
-{ "mesaj": "Email sau parolă greșită." }
+{ "message": "Invalid email or password." }
 ```
 
-Every error looks the same, so the clients can show `mesaj` to the user directly. This is why messages are in Romanian. Without the handler, Spring returns its own generic error JSON, which does not include a readable message.
+Every error looks the same, so the clients can show `message` to the user directly. Messages are therefore written as complete sentences. Without the handler, Spring returns its own generic error JSON, which does not include a readable message.
 
 #### `config/`: application-wide setup
 
@@ -231,7 +231,7 @@ Configuration that is not tied to one feature: [`CorsConfig`](src/main/java/com/
 
 #### `monitoring/`: what the system administrator observes
 
-State that exists only while the server runs, for UC22 and UC23: [`ClientRegistry`](src/main/java/com/qvorum/server/monitoring/ClientRegistry.java) keeps the list of connected clients. The request/response history and connection/disconnection events will be recorded here as well.
+State that exists only while the server runs, for UC32 and UC33: [`ClientRegistry`](src/main/java/com/qvorum/server/monitoring/ClientRegistry.java) keeps the list of connected clients. The request/response history and connection/disconnection events will be recorded here as well.
 
 #### `console/`: the system administrator's commands
 
@@ -241,20 +241,20 @@ State that exists only while the server runs, for UC22 and UC23: [`ClientRegistr
 
 ## 5. Walkthrough: what happens when someone logs in
 
-1. The user types an email and password in the web or mobile app and presses *Conectare*. The app sends:
+1. The user types an email and password in the web or mobile app and presses *Log in*. The app sends:
    ```
    POST http://<server>:8080/auth/login
-   { "email": "admin@qvorum.test", "parola": "…" }
+   { "email": "admin@qvorum.test", "password": "…" }
    ```
 2. **Spring Security** lets the request through, because `SecurityConfig` permits `/auth/**`.
-3. Spring finds the method mapped to `POST /auth/login`: `AuthController.login`. It converts the JSON into a `LoginRequest` and, because of `@Valid`, checks `@NotBlank` and `@Email`. If they fail, `GlobalExceptionHandler` answers `400 {"mesaj": "Date invalide."}`.
+3. Spring finds the method mapped to `POST /auth/login`: `AuthController.login`. It converts the JSON into a `LoginRequest` and, because of `@Valid`, checks `@NotBlank` and `@Email`. If they fail, `GlobalExceptionHandler` answers `400 {"message": "Invalid data."}`.
 4. `AuthController` calls `AuthService.login(request)`.
-5. `AuthService` calls `utilizatorRepository.findByEmail(...)`. Spring Data runs `SELECT … FROM utilizator WHERE email = ?` and Hibernate turns the row into a `Utilizator` object.
-6. `AuthService` checks the password with `passwordEncoder.matches(plain, hash)`. If the user does not exist or the password is wrong, it throws `ApiException(401, "Email sau parolă greșită.")`, which the handler turns into a 401 response.
-7. If everything matches, `JwtService.generateToken` creates the token, and `UtilizatorDto.from(...)` converts the entity into a DTO without the password hash.
+5. `AuthService` calls `userRepository.findByEmail(...)`. Spring Data runs `SELECT … FROM users WHERE email = ?` and Hibernate turns the row into a `User` object.
+6. `AuthService` checks the password with `passwordEncoder.matches(plain, hash)`. If the user does not exist or the password is wrong, it throws `ApiException(401, "Invalid email or password.")`, which the handler turns into a 401 response.
+7. If everything matches, `JwtService.generateToken` creates the token, and `UserDto.from(...)` converts the entity into a DTO without the password hash.
 8. The controller returns the `LoginResponse`; Spring converts it to JSON:
    ```json
-   { "token": "eyJhbGciOi…", "utilizator": { "id": 2, "nume": "Ionescu", "prenume": "Mihai", "email": "admin@qvorum.test", "roluri": ["ADMINISTRATOR"] } }
+   { "token": "eyJhbGciOi…", "user": { "id": 2, "firstName": "Mihai", "lastName": "Ionescu", "email": "admin@qvorum.test", "roles": ["ADMINISTRATOR"] } }
    ```
 9. The app stores the token and sends it on every following request as `Authorization: Bearer <token>`.
 
@@ -264,15 +264,16 @@ State that exists only while the server runs, for UC22 and UC23: [`ClientRegistr
 
 The database is **PostgreSQL**. Its tables are created by **Flyway** from the SQL files in [`src/main/resources/db/migration`](src/main/resources/db/migration):
 
-- `V1__create_utilizator.sql` creates the user tables;
-- `V2__seed_test_users.sql` inserts test accounts.
+- `V1__create_utilizator.sql` creates the user tables (with the original Romanian names);
+- `V2__seed_test_users.sql` inserts test accounts;
+- `V3__rename_schema_to_english.sql` renames the tables, columns and roles to English (`users`, `user_roles`, `RESIDENT` / `ADMINISTRATOR` / `PRESIDENT`).
 
 On every start, Flyway checks which scripts have already run (it records them in the table `flyway_schema_history`) and runs only the new ones, in version order. Hibernate is set to `ddl-auto=validate`: it never creates or changes tables, it only checks at start-up that the entities match the tables and stops with an error if they do not.
 
 Why Flyway instead of letting Hibernate create tables: the schema is written explicitly in SQL, it is versioned in Git, every machine ends up with exactly the same database, and the scripts double as the database deliverable of the project.
 
 **Rules:**
-- To change the database, add a new file `V3__description.sql`, `V4__…`. **Never edit a script that has already run**; Flyway detects the change and refuses to start.
+- To change the database, add a new file `V4__description.sql`, `V5__…`. **Never edit a script that has already run**; Flyway detects the change and refuses to start.
 - Each entity must match its table, otherwise the validation fails at start-up.
 - During development, if the database gets into a bad state, delete it and start again (see section 7.3); all scripts run again from V1.
 
@@ -280,9 +281,9 @@ Why Flyway instead of letting Hibernate create tables: the schema is written exp
 
 | Email | Roles |
 | --- | --- |
-| `locatar@qvorum.test` | LOCATAR |
+| `resident@qvorum.test` | RESIDENT |
 | `admin@qvorum.test` | ADMINISTRATOR |
-| `presedinte@qvorum.test` | PRESEDINTE, LOCATAR |
+| `president@qvorum.test` | PRESIDENT, RESIDENT |
 
 ---
 
@@ -316,7 +317,7 @@ Alternatively, run `QvorumServerApplication` from the IDE (the green arrow next 
 Try the login from another terminal:
 
 ```bash
-curl -X POST http://localhost:8080/auth/login -H "Content-Type: application/json" -d '{"email":"admin@qvorum.test","parola":"<password from V2__seed_test_users.sql>"}'
+curl -X POST http://localhost:8080/auth/login -H "Content-Type: application/json" -d '{"email":"admin@qvorum.test","password":"<password from V2__seed_test_users.sql>"}'
 ```
 
 Other useful commands:
@@ -345,17 +346,17 @@ java -jar target/server-0.0.1-SNAPSHOT.jar   # run the built jar
 
 ## 8. How to add a feature
 
-Example: announcements (UC11, "Gestionare anunțuri").
+Example: announcements (UC19, "Manage announcements").
 
-1. **Database:** add `V3__create_anunt.sql` with the `CREATE TABLE anunt (...)` statement from the ERD.
-2. **Entity:** `model/Anunt.java` with `@Entity`, fields matching the columns, relationships (e.g. `@ManyToOne` to the author).
-3. **Repository:** `repository/AnuntRepository.java` extending `JpaRepository<Anunt, Long>`, plus query methods you need (`findAllByOrderByDataPublicariiDesc()`).
-4. **DTOs:** `dto/AnuntDto.java` for responses and `dto/CreareAnuntRequest.java` for input, with validation annotations. Add the matching TypeScript types to `shared/src/types`.
-5. **Service:** `service/AnuntService.java` with methods like `listeaza()`, `creeaza(request, autor)`; check permissions and rules here and throw `ApiException` when something is not allowed.
-6. **Controller:** `controller/AnuntController.java` with `@RequestMapping("/anunturi")`, `@GetMapping`, `@PostMapping`, each calling one service method.
+1. **Database:** add `V4__create_announcements.sql` with the `CREATE TABLE announcements (...)` statement from the ERD.
+2. **Entity:** `model/Announcement.java` with `@Entity`, fields matching the columns, relationships (e.g. `@ManyToOne` to the author).
+3. **Repository:** `repository/AnnouncementRepository.java` extending `JpaRepository<Announcement, Long>`, plus query methods you need (`findAllByOrderByPublishedAtDesc()`).
+4. **DTOs:** `dto/AnnouncementDto.java` for responses and `dto/CreateAnnouncementRequest.java` for input, with validation annotations. Add the matching TypeScript types to `shared/src/types`.
+5. **Service:** `service/AnnouncementService.java` with methods like `list()`, `create(request, author)`; check permissions and rules here and throw `ApiException` when something is not allowed.
+6. **Controller:** `controller/AnnouncementController.java` with `@RequestMapping("/announcements")`, `@GetMapping`, `@PostMapping`, each calling one service method.
 7. **Client side:** add the endpoint functions in `shared/src/api/` so the web and mobile apps can call them.
 
-Keep URLs as plural nouns (`/anunturi`, `/facturi`, `/sesizari/{id}`) and use the HTTP method for the action: `GET` read, `POST` create, `PUT` update, `DELETE` delete.
+Keep URLs as plural nouns (`/announcements`, `/invoices`, `/issues/{id}`) and use the HTTP method for the action: `GET` read, `POST` create, `PUT` update, `DELETE` delete.
 
 ---
 
@@ -364,8 +365,8 @@ Keep URLs as plural nouns (`/anunturi`, `/facturi`, `/sesizari/{id}`) and use th
 The skeleton runs and login works end to end. These pieces are the next steps:
 
 - **JWT filter:** a filter in `security/` that reads `Authorization: Bearer <token>` on every request, validates it with `JwtService.extractUserId`, and tells Spring Security who the current user is. After that, change `.anyRequest().permitAll()` to `.authenticated()` in `SecurityConfig`, and restrict endpoints by role.
-- **Notifications and connected clients:** a WebSocket endpoint (configuration in `config/`) that the apps connect to after login. Connections and disconnections update `ClientRegistry`; the console can then list and force-disconnect clients (UC22), and services push notifications through it (UC9).
-- **Request history (UC23):** a filter in `monitoring/` that records each request and its response, plus a console command that prints the history and saves it to CSV.
-- **Server state (UC21):** console commands to stop and resume accepting client requests (e.g. answer 503 while stopped) and to show the server status.
+- **Notifications and connected clients:** a WebSocket endpoint (configuration in `config/`) that the apps connect to after login. Connections and disconnections update `ClientRegistry`; the console can then list and force-disconnect clients (UC32), and services push notifications through it (UC6).
+- **Request history (UC33):** a filter in `monitoring/` that records each request and its response, plus a console command that prints the history and saves it to CSV.
+- **Server state (UC31):** console commands to stop and resume accepting client requests (e.g. answer 503 while stopped) and to show the server status.
 - **Domain features:** apartments, announcements, invoices and maintenance lists, payments (Stripe test mode), meter readings, issue reports, votes, deadline calendar, statistics, following the ERD.
 - **Tests:** the generated `QvorumServerApplicationTests` only checks that the application starts (it needs the database). Service tests with fake repositories are the most valuable next ones.

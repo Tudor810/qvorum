@@ -2,10 +2,10 @@ package com.qvorum.server.service;
 
 import com.qvorum.server.dto.LoginRequest;
 import com.qvorum.server.dto.LoginResponse;
-import com.qvorum.server.dto.UtilizatorDto;
+import com.qvorum.server.dto.UserDto;
 import com.qvorum.server.exception.ApiException;
-import com.qvorum.server.model.Utilizator;
-import com.qvorum.server.repository.UtilizatorRepository;
+import com.qvorum.server.model.User;
+import com.qvorum.server.repository.UserRepository;
 import com.qvorum.server.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,15 +17,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
 
-    private final UtilizatorRepository utilizatorRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public AuthService(
-            UtilizatorRepository utilizatorRepository,
+            UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService) {
-        this.utilizatorRepository = utilizatorRepository;
+        this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -33,10 +33,10 @@ public class AuthService {
     public LoginResponse login(LoginRequest request) {
         // The same message for an unknown email and a wrong password, so the response does not
         // reveal which emails have accounts.
-        Utilizator utilizator = utilizatorRepository.findByEmail(request.email())
-                .filter(u -> passwordEncoder.matches(request.parola(), u.getParolaHash()))
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Email sau parolă greșită."));
+        User user = userRepository.findByEmail(request.email())
+                .filter(u -> passwordEncoder.matches(request.password(), u.getPasswordHash()))
+                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Invalid email or password."));
 
-        return new LoginResponse(jwtService.generateToken(utilizator), UtilizatorDto.from(utilizator));
+        return new LoginResponse(jwtService.generateToken(user), UserDto.from(user));
     }
 }

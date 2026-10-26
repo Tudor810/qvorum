@@ -20,61 +20,61 @@ import java.util.Set;
  * to clients; services map them to DTOs.
  */
 @Entity
-@Table(name = "utilizator")
-public class Utilizator {
+@Table(name = "users")
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nume;
+    private String firstName;
 
-    private String prenume;
+    private String lastName;
 
     private String email;
 
     /** BCrypt hash of the password; the plain password is never stored. */
-    private String parolaHash;
+    private String passwordHash;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "utilizator_rol", joinColumns = @JoinColumn(name = "utilizator_id"))
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
-    @Column(name = "rol")
-    private Set<Rol> roluri = new HashSet<>();
+    @Column(name = "role")
+    private Set<Role> roles = new HashSet<>();
 
     /** Required by JPA. */
-    protected Utilizator() {
+    protected User() {
     }
 
-    public Utilizator(String nume, String prenume, String email, String parolaHash, Set<Rol> roluri) {
-        this.nume = nume;
-        this.prenume = prenume;
+    public User(String firstName, String lastName, String email, String passwordHash, Set<Role> roles) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
-        this.parolaHash = parolaHash;
-        this.roluri = new HashSet<>(roluri);
+        this.passwordHash = passwordHash;
+        this.roles = new HashSet<>(roles);
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getNume() {
-        return nume;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public String getPrenume() {
-        return prenume;
+    public String getLastName() {
+        return lastName;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public String getParolaHash() {
-        return parolaHash;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public Set<Rol> getRoluri() {
-        return roluri;
+    public Set<Role> getRoles() {
+        return roles;
     }
 }

@@ -4,7 +4,7 @@ import { LoginForm } from '../features/auth'
 function App() {
   return (
     <main>
-      <h1>{strings.app.nume}</h1>
+      <h1>{strings.app.name}</h1>
       <LoginForm />
     </main>
   )

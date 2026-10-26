@@ -1,14 +1,14 @@
-import type { DataISO, SumaBani } from './types'
+import type { IsoDate, Money } from './types'
 
-const lei = new Intl.NumberFormat('ro-RO', { style: 'currency', currency: 'RON' })
-const data = new Intl.DateTimeFormat('ro-RO', { day: '2-digit', month: 'long', year: 'numeric' })
+const ron = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'RON' })
+const date = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
 
-/** 12345 → "123,45 RON" */
-export function formatLei(suma: SumaBani): string {
-  return lei.format(suma / 100)
+/** 12345 → "RON 123.45" */
+export function formatMoney(amount: Money): string {
+  return ron.format(amount / 100)
 }
 
-/** "2026-10-19" → "19 octombrie 2026" */
-export function formatData(valoare: DataISO | Date): string {
-  return data.format(typeof valoare === 'string' ? new Date(valoare) : valoare)
+/** "2026-10-19" → "19 October 2026" */
+export function formatDate(value: IsoDate | Date): string {
+  return date.format(typeof value === 'string' ? new Date(value) : value)
 }

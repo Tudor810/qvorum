@@ -16,7 +16,7 @@ export function useLogin() {
       const { token } = await loginRequest(credentials)
       tokenStore.set(token)
     } catch {
-      setError(strings.comun.eroareGenerala)
+      setError(strings.common.genericError)
     } finally {
       setLoading(false)
     }

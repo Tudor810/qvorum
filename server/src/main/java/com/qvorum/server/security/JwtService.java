@@ -1,6 +1,6 @@
 package com.qvorum.server.security;
 
-import com.qvorum.server.model.Utilizator;
+import com.qvorum.server.model.User;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -29,10 +29,10 @@ public class JwtService {
         this.validity = Duration.ofHours(validityHours);
     }
 
-    public String generateToken(Utilizator utilizator) {
+    public String generateToken(User user) {
         Instant now = Instant.now();
         return Jwts.builder()
-                .subject(String.valueOf(utilizator.getId()))
+                .subject(String.valueOf(user.getId()))
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(validity)))
                 .signWith(key)
