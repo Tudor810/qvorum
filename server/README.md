@@ -21,7 +21,7 @@ The two client apps only **show** data and **collect** input. They do not store 
 3. **It authenticates users.** It checks email and password at login and gives the client a token (JWT). Every later request carries that token, so the server knows who is asking.
 4. **It talks to external services.** Online payments go through Stripe, and repair requests are forwarded to service companies by email. API keys for these services must stay secret, so only the server can hold them.
 5. **It notifies clients.** When something relevant happens (a new announcement, a status change of an issue report), the server pushes a notification to the connected clients.
-6. **It offers a console for the system administrator.** The project requirements ask for a console application. While the server runs, the system administrator can type commands in its terminal to see the server state (UC31), list and force-disconnect connected clients (UC32), and view the request history and save it to a CSV file (UC33).
+6. **It offers a console for the system administrator.** The project requirements ask for a console application. While the server runs, the system administrator can type commands in its terminal to see the server state (UC23), list and force-disconnect connected clients (UC24), and view the request history and save it to a CSV file (UC25).
 
 The clients and the server communicate over **HTTP with JSON**: the client sends a request such as `POST /auth/login` with a JSON body, the server answers with a status code (200 OK, 401 Unauthorized, …) and a JSON body. This style of API is called **REST**.
 
@@ -231,7 +231,7 @@ Configuration that is not tied to one feature: [`CorsConfig`](src/main/java/com/
 
 #### `monitoring/`: what the system administrator observes
 
-State that exists only while the server runs, for UC32 and UC33: [`ClientRegistry`](src/main/java/com/qvorum/server/monitoring/ClientRegistry.java) keeps the list of connected clients. The request/response history and connection/disconnection events will be recorded here as well.
+State that exists only while the server runs, for UC24 and UC25: [`ClientRegistry`](src/main/java/com/qvorum/server/monitoring/ClientRegistry.java) keeps the list of connected clients. The request/response history and connection/disconnection events will be recorded here as well.
 
 #### `console/`: the system administrator's commands
 
@@ -346,7 +346,7 @@ java -jar target/server-0.0.1-SNAPSHOT.jar   # run the built jar
 
 ## 8. How to add a feature
 
-Example: announcements (UC19, "Manage announcements").
+Example: announcements (UC14, "Manage announcements").
 
 1. **Database:** add `V4__create_announcements.sql` with the `CREATE TABLE announcements (...)` statement from the ERD.
 2. **Entity:** `model/Announcement.java` with `@Entity`, fields matching the columns, relationships (e.g. `@ManyToOne` to the author).
@@ -365,8 +365,8 @@ Keep URLs as plural nouns (`/announcements`, `/invoices`, `/issues/{id}`) and us
 The skeleton runs and login works end to end. These pieces are the next steps:
 
 - **JWT filter:** a filter in `security/` that reads `Authorization: Bearer <token>` on every request, validates it with `JwtService.extractUserId`, and tells Spring Security who the current user is. After that, change `.anyRequest().permitAll()` to `.authenticated()` in `SecurityConfig`, and restrict endpoints by role.
-- **Notifications and connected clients:** a WebSocket endpoint (configuration in `config/`) that the apps connect to after login. Connections and disconnections update `ClientRegistry`; the console can then list and force-disconnect clients (UC32), and services push notifications through it (UC6).
-- **Request history (UC33):** a filter in `monitoring/` that records each request and its response, plus a console command that prints the history and saves it to CSV.
-- **Server state (UC31):** console commands to stop and resume accepting client requests (e.g. answer 503 while stopped) and to show the server status.
+- **Notifications and connected clients:** a WebSocket endpoint (configuration in `config/`) that the apps connect to after login. Connections and disconnections update `ClientRegistry`; the console can then list and force-disconnect clients (UC24), and services push notifications through it (UC4).
+- **Request history (UC25):** a filter in `monitoring/` that records each request and its response, plus a console command that prints the history and saves it to CSV.
+- **Server state (UC23):** console commands to stop and resume accepting client requests (e.g. answer 503 while stopped) and to show the server status.
 - **Domain features:** apartments, announcements, invoices and maintenance lists, payments (Stripe test mode), meter readings, issue reports, votes, deadline calendar, statistics, following the ERD.
 - **Tests:** the generated `QvorumServerApplicationTests` only checks that the application starts (it needs the database). Service tests with fake repositories are the most valuable next ones.

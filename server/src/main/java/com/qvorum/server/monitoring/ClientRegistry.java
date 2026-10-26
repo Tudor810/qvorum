@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * monitoring: state observed by the system administrator: connected clients, connection and
- * disconnection events, and the request/response history (UC32, UC33).
+ * disconnection events, and the request/response history (UC24, UC25).
  */
 @Component
 public class ClientRegistry {
