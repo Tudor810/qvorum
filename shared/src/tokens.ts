@@ -1,5 +1,5 @@
-// Valori provizorii până stabilim direcția vizuală.
-// Numerele sunt în px pe web și în unități independente de densitate pe mobil.
+// Provisional values until the visual direction is settled.
+// Numbers are px on the web and density-independent units on mobile.
 
 export const colors = {
   primary: '#1F5FAD',

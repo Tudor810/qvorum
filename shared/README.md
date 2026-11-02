@@ -3,7 +3,7 @@
 TypeScript code shared by the web and mobile clients. Both apps import it directly from source:
 
 ```ts
-import { createApiClient, formatLei, strings } from '@qvorum/shared'
+import { createApiClient, formatMoney, strings } from '@qvorum/shared'
 ```
 
 There is no build step: Vite and Metro compile the `.ts` files as part of each app.
@@ -16,7 +16,7 @@ There is no build step: Vite and Metro compile the `.ts` files as part of each a
 | `src/api/*.ts` | endpoint functions, one file per feature (e.g. `auth.ts`) |
 | `src/types/` | domain entities and API request/response types |
 | `src/constants.ts` | user roles and other fixed values |
-| `src/format.ts` | Romanian formatting for money (RON) and dates |
+| `src/format.ts` | formatting for money (RON) and dates |
 | `src/tokens.ts` | design tokens: colors, spacing, radius, font sizes |
 | `src/strings.ts` | user interface texts |
 

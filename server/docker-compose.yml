@@ -1,0 +1,15 @@
+# Local PostgreSQL for development: `docker compose up -d` from the server/ folder.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: qvorum
+      POSTGRES_USER: qvorum
+      POSTGRES_PASSWORD: qvorum
+    ports:
+      - "5432:5432"
+    volumes:
+      - qvorum-db:/var/lib/postgresql/data
+
+volumes:
+  qvorum-db:

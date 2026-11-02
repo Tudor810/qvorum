@@ -1,23 +1,23 @@
-// Entitățile se completează după ce ERD-ul este stabilit cu serverul.
-import type { Rol } from '../constants'
+// Entities are added once the ERD is agreed with the server.
+import type { Role } from '../constants'
 
 export type Id = number
 
-/** Dată calendaristică ISO, ex. "2026-10-19". */
-export type DataISO = string
+/** ISO calendar date, e.g. "2026-10-19". */
+export type IsoDate = string
 
-/** Sumă în bani (1 leu = 100 bani), pentru a evita erorile de rotunjire. */
-export type SumaBani = number
+/** Amount in bani (1 RON = 100 bani), stored as an integer to avoid rounding errors. */
+export type Money = number
 
-export interface Utilizator {
+export interface User {
   id: Id
-  nume: string
-  prenume: string
+  firstName: string
+  lastName: string
   email: string
-  roluri: Rol[]
+  roles: Role[]
 }
 
-export interface RaspunsAutentificare {
+export interface AuthResponse {
   token: string
-  utilizator: Utilizator
+  user: User
 }
