@@ -1,4 +1,4 @@
-# Local PostgreSQL for development: `docker compose up -d` from the server/ folder.
+# Local services for development: `docker compose up -d` from the server/ folder.
 services:
   db:
     image: postgres:17
@@ -10,6 +10,13 @@ services:
       - "5432:5432"
     volumes:
       - qvorum-db:/var/lib/postgresql/data
+
+  # Fake email server: accepts every email the server sends and shows it at http://localhost:8025.
+  mail:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   qvorum-db:

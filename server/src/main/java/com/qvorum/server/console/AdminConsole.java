@@ -38,14 +38,35 @@ public class AdminConsole {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Qvorum server console. Type 'help' for commands.");
         while (scanner.hasNextLine()) {
-            switch (scanner.nextLine().trim()) {
-                case "help" -> System.out.println("status | clients | exit");
+            String[] words = scanner.nextLine().trim().split("\\s+");
+            switch (words[0]) {
+                case "help" -> System.out.println("status | clients | disconnect <client id> | exit");
                 case "status" -> System.out.println("Running for " + Duration.between(startedAt, Instant.now()).toSeconds() + " s");
-                case "clients" -> System.out.println(clientRegistry.list());
+                case "clients" -> printClients();
+                case "disconnect" -> disconnect(words);
                 case "exit" -> System.exit(SpringApplication.exit(context));
                 case "" -> { }
                 default -> System.out.println("Unknown command. Type 'help'.");
             }
         }
+    }
+
+    private void printClients() {
+        var clients = clientRegistry.list();
+        System.out.println(clients.size() + " connected client(s)");
+        for (ClientRegistry.ClientInfo c : clients) {
+            System.out.printf("%s  %-30s %-15s connected %s, last seen %s%n",
+                    c.id(), c.email(), c.address(), c.connectedAt().withNano(0), c.lastSeenAt().withNano(0));
+        }
+    }
+
+    private void disconnect(String[] words) {
+        if (words.length != 2) {
+            System.out.println("Usage: disconnect <client id>  (see 'clients')");
+            return;
+        }
+        clientRegistry.disconnect(words[1]).ifPresentOrElse(
+                c -> System.out.println("Disconnected " + c.email() + ". Their next request will be refused."),
+                () -> System.out.println("No connected client with id " + words[1]));
     }
 }

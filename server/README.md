@@ -266,7 +266,11 @@ The database is **PostgreSQL**. Its tables are created by **Flyway** from the SQ
 
 - `V1__create_utilizator.sql` creates the user tables (with the original Romanian names);
 - `V2__seed_test_users.sql` inserts test accounts;
-- `V3__rename_schema_to_english.sql` renames the tables, columns and roles to English (`users`, `user_roles`, `RESIDENT` / `ADMINISTRATOR` / `PRESIDENT`).
+- `V3__rename_schema_to_english.sql` renames the tables, columns and roles to English (`users`, `user_roles`, `RESIDENT` / `ADMINISTRATOR` / `PRESIDENT`);
+- `V4__create_full_schema.sql` creates every other table of the ERD (`docs/Qvorum_ERD.drawio`) and adds the missing columns to `users`;
+- `V5__seed_demo_association.sql` adds a demo association run by `admin@qvorum.test`, with staircases, apartments and meters; the resident lives in apartment 1, the president in apartment 2.
+
+Every table exists from V4 on, but an entity class is written only when a feature first uses that table (Hibernate validates only the tables that have an entity).
 
 On every start, Flyway checks which scripts have already run (it records them in the table `flyway_schema_history`) and runs only the new ones, in version order. Hibernate is set to `ddl-auto=validate`: it never creates or changes tables, it only checks at start-up that the entities match the tables and stops with an error if they do not.
 
@@ -296,7 +300,7 @@ Why Flyway instead of letting Hibernate create tables: the schema is written exp
   - **IntelliJ IDEA** (recommended for Spring Boot): it understands beans, shows all endpoints, and runs the app with one click. Spring support is in the commercial edition, which is free for students with the JetBrains educational licence. Open the `server/` folder; IntelliJ detects `pom.xml` and imports the project. It can also download a JDK for you (*File → Project Structure → SDK*).
   - **VS Code** with *Extension Pack for Java* and *Spring Boot Extension Pack*. Open the `server/` folder or the whole repository; the *Spring Boot Dashboard* in the sidebar starts the app.
 - **PostgreSQL**, in one of two ways:
-  - **Docker** (easiest): install Docker Desktop, then from `server/` run `docker compose up -d`. This starts a database already configured with the values from `.env.example`.
+  - **Docker** (easiest): install Docker Desktop, then from `server/` run `docker compose up -d`. This starts a database already configured with the values from `.env.example`, and Mailpit, a fake email server (inbox at http://localhost:8025).
   - **Local install:** install PostgreSQL from postgresql.org, then in *psql* or *pgAdmin* run:
     ```sql
     CREATE USER qvorum WITH PASSWORD 'qvorum';
@@ -323,7 +327,7 @@ curl -X POST http://localhost:8080/auth/login -H "Content-Type: application/json
 Other useful commands:
 
 ```bash
-./mvnw test                     # run the tests (the database must be running)
+./mvnw test                     # run the tests (Docker must be running)
 ./mvnw package -DskipTests      # build target/server-0.0.1-SNAPSHOT.jar
 java -jar target/server-0.0.1-SNAPSHOT.jar   # run the built jar
 ```
@@ -362,11 +366,19 @@ Keep URLs as plural nouns (`/announcements`, `/invoices`, `/issues/{id}`) and us
 
 ## 9. What is not implemented yet
 
-The skeleton runs and login works end to end. These pieces are the next steps:
+Already in place (phase 0):
 
-- **JWT filter:** a filter in `security/` that reads `Authorization: Bearer <token>` on every request, validates it with `JwtService.extractUserId`, and tells Spring Security who the current user is. After that, change `.anyRequest().permitAll()` to `.authenticated()` in `SecurityConfig`, and restrict endpoints by role.
-- **Notifications and connected clients:** a WebSocket endpoint (configuration in `config/`) that the apps connect to after login. Connections and disconnections update `ClientRegistry`; the console can then list and force-disconnect clients (UC24), and services push notifications through it (UC4).
-- **Request history (UC25):** a filter in `monitoring/` that records each request and its response, plus a console command that prints the history and saves it to CSV.
-- **Server state (UC23):** console commands to stop and resume accepting client requests (e.g. answer 503 while stopped) and to show the server status.
+- **Authentication on every request:** `JwtAuthenticationFilter` reads `Authorization: Bearer <token>`; every endpoint except `POST /auth/login` needs a valid token (401 otherwise). Restrict an endpoint to a role with `@PreAuthorize("hasRole('ADMINISTRATOR')")` (403 otherwise). A controller gets the current user with a parameter `@AuthenticationPrincipal AuthenticatedUser currentUser`. Endpoints: `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`.
+- **Client sessions:** each login creates a client session in `ClientRegistry`, and its id is stored in the token. Logout, or `disconnect <id>` in the console, ends the session and the token stops working at once. Sessions live in memory, so restarting the server logs everyone out.
+- **Request history:** `RequestLoggingFilter` writes every request (method, path, status, duration, client, user) and every connect/disconnect to `request_logs`.
+- **Email and SMS:** `EmailService` (SMTP; in development Mailpit from `docker-compose.yml` catches every email, see http://localhost:8025) and `SmsService` (writes to the log for now), both in `integration/`.
+- **Photo uploads:** `FileStorageService` stores JPEG/PNG files under `UPLOAD_DIR` and returns the relative path to save in the database.
+- **Tests:** `./mvnw test` starts its own PostgreSQL in Docker (Testcontainers), so Docker must be running, but the development database is never touched.
+
+Next steps:
+
+- **Server state (UC23):** console commands to stop and resume accepting client requests (e.g. answer 503 while stopped).
+- **Request history export (UC25):** a console command that prints the history for a period and saves it to CSV.
+- **Notifications (UC4):** stored in `notifications`; the apps poll for them, or a WebSocket pushes them.
 - **Domain features:** apartments, announcements, invoices and maintenance lists, payments (Stripe test mode), meter readings, issue reports, votes, deadline calendar, statistics, following the ERD.
-- **Tests:** the generated `QvorumServerApplicationTests` only checks that the application starts (it needs the database). Service tests with fake repositories are the most valuable next ones.
+- **Tests:** service tests with fake repositories for each new feature.

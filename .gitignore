@@ -69,3 +69,7 @@ server/out/
 .DS_Store
 Thumbs.db
 ~$*
+
+# Server: uploaded photos
+server/uploads/
+uploads/
