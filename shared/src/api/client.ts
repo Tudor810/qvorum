@@ -5,6 +5,13 @@ export interface ApiClientConfig {
   getToken: () => string | null | Promise<string | null>
 }
 
+export class NetworkError extends Error {
+  constructor() {
+    super('Network request failed')
+    this.name = 'NetworkError'
+  }
+}
+
 export class ApiError extends Error {
   readonly status: number
   readonly body: unknown
@@ -19,6 +26,17 @@ export class ApiError extends Error {
 
 export type ApiClient = ReturnType<typeof createApiClient>
 
+
+async function parseBody(response: Response): Promise<unknown> {
+  const text = await response.text()
+  if (!text) return undefined
+  try {
+    return JSON.parse(text)
+  } catch {
+    return text
+  }
+}
+
 export function createApiClient({ baseUrl, getToken }: ApiClientConfig) {
   const root = baseUrl.replace(/\/+$/, '')
 
@@ -28,18 +46,21 @@ export function createApiClient({ baseUrl, getToken }: ApiClientConfig) {
     if (body !== undefined) headers['Content-Type'] = 'application/json'
     if (token) headers.Authorization = `Bearer ${token}`
 
-    const response = await fetch(`${root}${path}`, {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-    })
+    let response: Response
+    try {
+      response = await fetch(`${root}${path}`, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      })
+    } catch {
+      throw new NetworkError()
+    }
 
-    const text = await response.text()
-    const data: unknown = text ? JSON.parse(text) : undefined
+    const data = await parseBody(response)
     if (!response.ok) throw new ApiError(response.status, data)
     return data as T
   }
-
   return {
     get: <T>(path: string) => request<T>('GET', path),
     post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),

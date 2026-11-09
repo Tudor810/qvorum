@@ -69,3 +69,6 @@ server/out/
 .DS_Store
 Thumbs.db
 ~$*
+
+.claude
+docs/diagram-sources

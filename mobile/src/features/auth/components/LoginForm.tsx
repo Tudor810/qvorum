@@ -1,7 +1,7 @@
 // View: renders the form and forwards user input to the view model.
-import { colors, spacing, strings } from '@qvorum/shared';
+import { strings } from '@qvorum/shared';
 import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AppText, Button, Card, Field } from '@/components/ui';
 import { useLogin } from '../hooks/useLogin';
 
 export function LoginForm() {
@@ -10,43 +10,25 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
 
   return (
-    <View style={styles.form}>
-      <TextInput
-        style={styles.input}
-        placeholder={strings.auth.email}
+    <Card style={{ width: '100%' }}>
+      <AppText variant="title">{strings.auth.title}</AppText>
+      <Field
+        label={strings.auth.email}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        autoComplete="email"
       />
-      <TextInput
-        style={styles.input}
-        placeholder={strings.auth.password}
+      <Field
+        label={strings.auth.password}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        autoComplete="password"
       />
-      {error && <Text style={styles.error}>{error}</Text>}
-      <Button
-        title={strings.auth.logIn}
-        disabled={loading}
-        onPress={() => void submit({ email, password })}
-      />
-    </View>
+      {error ? <AppText color="danger">{error}</AppText> : null}
+      <Button title={strings.auth.logIn} loading={loading} onPress={() => void submit({ email, password })} />
+    </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  form: {
-    width: '100%',
-    gap: spacing.md,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-  },
-  error: {
-    color: colors.danger,
-  },
-});

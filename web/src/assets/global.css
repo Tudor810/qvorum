@@ -1,12 +1,30 @@
+/*
+ * Global styles. Every value comes from the shared theme through CSS variables set by
+ * src/lib/theme.ts, so colors switch automatically between light and dark mode.
+ *
+ * Classes: .container .stack .row .card .btn (.btn-primary .btn-secondary .btn-ghost .btn-danger
+ * .btn-sm .btn-lg .btn-block) .field .label .input .hint .error .badge (.badge-{tone})
+ * .alert (.alert-{tone}) .text-muted .text-subtle .text-sm .text-xs, headings h1-h3.
+ */
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-background);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -21,4 +39,260 @@ input,
 select,
 textarea {
   font: inherit;
+  color: inherit;
 }
+
+a {
+  color: var(--color-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Text ---------- */
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--color-text);
+}
+
+h1 {
+  font-size: var(--font-size-display);
+  line-height: 38px;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: var(--font-size-xxl);
+  line-height: 32px;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: var(--font-size-lg);
+  line-height: 26px;
+  font-weight: 600;
+}
+
+p {
+  margin: 0;
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-subtle {
+  color: var(--color-text-subtle);
+}
+
+.text-sm {
+  font-size: var(--font-size-sm);
+  line-height: 20px;
+}
+
+.text-xs {
+  font-size: var(--font-size-xs);
+  line-height: 16px;
+}
+
+/* ---------- Layout ---------- */
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-xl);
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  height: var(--control-md);
+  padding: 0 var(--space-lg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast),
+    border-color var(--duration-fast),
+    color var(--duration-fast);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--color-primary-pressed);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-surface-muted);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-primary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--tone-brand-bg);
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: var(--color-surface);
+}
+
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.btn-sm {
+  height: var(--control-sm);
+  padding: 0 var(--space-md);
+  font-size: var(--font-size-sm);
+}
+
+.btn-lg {
+  height: var(--control-lg);
+  padding: 0 var(--space-xl);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ---------- Forms ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.input {
+  width: 100%;
+  height: var(--control-md);
+  padding: 0 var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  transition: border-color var(--duration-fast);
+}
+
+textarea.input {
+  height: auto;
+  min-height: 96px;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.input::placeholder {
+  color: var(--color-text-subtle);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--tone-brand-bg);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.error {
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+}
+
+/* ---------- Badges and alerts ---------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background: var(--tone-neutral-bg);
+  color: var(--tone-neutral-fg);
+}
+
+.alert {
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--tone-neutral-border);
+  border-radius: var(--radius-md);
+  background: var(--tone-neutral-bg);
+  color: var(--tone-neutral-fg);
+  font-size: var(--font-size-sm);
+}
+
+.badge-brand, .alert-brand { background: var(--tone-brand-bg); color: var(--tone-brand-fg); border-color: var(--tone-brand-border); }
+.badge-success, .alert-success { background: var(--tone-success-bg); color: var(--tone-success-fg); border-color: var(--tone-success-border); }
+.badge-warning, .alert-warning { background: var(--tone-warning-bg); color: var(--tone-warning-fg); border-color: var(--tone-warning-border); }
+.badge-danger, .alert-danger { background: var(--tone-danger-bg); color: var(--tone-danger-fg); border-color: var(--tone-danger-border); }
+.badge-info, .alert-info { background: var(--tone-info-bg); color: var(--tone-info-fg); border-color: var(--tone-info-border); }

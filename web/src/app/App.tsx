@@ -3,8 +3,8 @@ import { LoginForm } from '../features/auth'
 
 function App() {
   return (
-    <main>
-      <h1>{strings.app.name}</h1>
+    <main className="container stack" style={{ maxWidth: 420, paddingTop: 96 }}>
+      <h1 style={{ color: 'var(--color-primary)' }}>{strings.app.name}</h1>
       <LoginForm />
     </main>
   )
