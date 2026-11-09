@@ -80,3 +80,6 @@ server/workspace.xml
 
 .claude
 docs/diagram-sources
+
+# Exported documentation (generated from the .docx)
+docs/*.pdf
