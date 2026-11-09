@@ -6,6 +6,10 @@
     "web",
     "mobile"
   ],
+  "overrides": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
   "scripts": {
     "web": "npm run dev --workspace web",
     "mobile": "npm run start --workspace mobile",

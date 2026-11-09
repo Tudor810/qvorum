@@ -296,3 +296,4 @@ textarea.input {
 .badge-warning, .alert-warning { background: var(--tone-warning-bg); color: var(--tone-warning-fg); border-color: var(--tone-warning-border); }
 .badge-danger, .alert-danger { background: var(--tone-danger-bg); color: var(--tone-danger-fg); border-color: var(--tone-danger-border); }
 .badge-info, .alert-info { background: var(--tone-info-bg); color: var(--tone-info-fg); border-color: var(--tone-info-border); }
+

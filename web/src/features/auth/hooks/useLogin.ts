@@ -10,29 +10,29 @@ type FieldErrors = { email?: string; password?: string }
 // Deliberately loose: just checks the general shape. The server is the real validator.
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-// function validate({ email, password }: LoginCredentials): FieldErrors {
-//   const errors: FieldErrors = {}
-//   if (!email.trim()) errors.email = strings.auth.emailRequired
-//   else if (!EMAIL_SHAPE.test(email.trim())) errors.email = strings.auth.emailInvalid
-//   if (!password) errors.password = strings.auth.passwordRequired
-//   return errors
-// }
+function validate({ email, password }: LoginCredentials): FieldErrors {
+  const errors: FieldErrors = {}
+  if (!email.trim()) errors.email = strings.auth.emailRequired
+  else if (!EMAIL_SHAPE.test(email.trim())) errors.email = strings.auth.emailInvalid
+  if (!password) errors.password = strings.auth.passwordRequired
+  return errors
+}
 
-// function messageFor(err: unknown): string {
-//   if (err instanceof NetworkError) return strings.auth.networkError
-//   if (err instanceof ApiError) {
-//     switch (err.status) {
-//       case 401:
-//         return strings.auth.invalidCredentials
-//       case 400:
-//       case 422:
-//         return strings.auth.invalidInput
-//       case 429:
-//         return strings.auth.tooManyAttempts
-//     }
-//   }
-//   return strings.common.genericError
-// }
+function messageFor(err: unknown): string {
+  if (err instanceof NetworkError) return strings.auth.networkError
+  if (err instanceof ApiError) {
+    switch (err.status) {
+      case 401:
+        return strings.auth.invalidCredentials
+      case 400:
+      case 422:
+        return strings.auth.invalidInput
+      case 429:
+        return strings.auth.tooManyAttempts
+    }
+  }
+  return strings.common.genericError
+}
 
 export function useLogin() {
   const [loading, setLoading] = useState(false)
@@ -43,9 +43,9 @@ export function useLogin() {
   async function submit(credentials: LoginCredentials): Promise<boolean> {
     const trimmed = { ...credentials, email: credentials.email.trim() }
 
-    const errors = {}
-    // const errors = validate(trimmed)
+    const errors = validate(trimmed)
     setFieldErrors(errors)
+
     setError(null)
     if (Object.keys(errors).length > 0) return false
 
@@ -55,7 +55,7 @@ export function useLogin() {
       tokenStore.set(token)
       return true
     } catch (err) {
-      // setError(messageFor(err))
+      setError(messageFor(err))
       return false
     } finally {
       setLoading(false)
