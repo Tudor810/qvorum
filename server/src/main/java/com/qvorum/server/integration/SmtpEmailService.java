@@ -39,7 +39,8 @@ public class SmtpEmailService implements EmailService {
             mailSender.send(message);
         } catch (MailException e) {
             log.error("Could not send email to {}", to, e);
-            throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE,
+            // 502 Bad Gateway: an external service failed (docs/api-contract.md, section 1.6).
+            throw new ApiException(HttpStatus.BAD_GATEWAY,
                     "The email could not be sent. Please try again later.");
         }
     }

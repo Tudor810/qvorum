@@ -13,7 +13,7 @@ public interface EmailService {
     /**
      * Sends a plain-text email.
      *
-     * @throws com.qvorum.server.exception.ApiException with status 503 if the email cannot be sent
+     * @throws com.qvorum.server.exception.ApiException with status 502 if the email cannot be sent
      */
     void send(String to, String subject, String body);
 }

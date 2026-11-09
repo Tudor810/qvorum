@@ -1,6 +1,7 @@
 package com.qvorum.server.monitoring;
 
 import com.qvorum.server.model.RequestEventType;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -26,8 +27,18 @@ public class ClientRegistry {
             LocalDateTime connectedAt, LocalDateTime lastSeenAt) {
     }
 
+    /** How long a forced disconnect is remembered: as long as the token could still be valid. */
+    private static final Duration CLOSED_MEMORY = Duration.ofHours(24);
+
     /** ConcurrentHashMap: HTTP requests run on many threads at once, and the console on another. */
     private final Map<String, ClientInfo> clients = new ConcurrentHashMap<>();
+
+    /**
+     * Sessions the system administrator closed, with the time it happened. Kept so the client can
+     * be told why its token stopped working ("closed by the administrator" instead of "log in").
+     */
+    private final Map<String, LocalDateTime> closedByAdministrator = new ConcurrentHashMap<>();
+
     private final RequestLogService requestLogService;
 
     public ClientRegistry(RequestLogService requestLogService) {
@@ -50,6 +61,22 @@ public class ClientRegistry {
             requestLogService.recordEvent(removed.id(), removed.userId(), RequestEventType.DISCONNECT);
         }
         return Optional.ofNullable(removed);
+    }
+
+    /** The system administrator closes a session from the console (UC24). */
+    public Optional<ClientInfo> forceDisconnect(String clientId) {
+        Optional<ClientInfo> removed = disconnect(clientId);
+        removed.ifPresent(c -> {
+            LocalDateTime now = LocalDateTime.now();
+            closedByAdministrator.values().removeIf(closedAt -> closedAt.isBefore(now.minus(CLOSED_MEMORY)));
+            closedByAdministrator.put(c.id(), now);
+        });
+        return removed;
+    }
+
+    /** True if this session ended because the system administrator disconnected it. */
+    public boolean wasClosedByAdministrator(String clientId) {
+        return clientId != null && closedByAdministrator.containsKey(clientId);
     }
 
     public boolean isConnected(String clientId) {

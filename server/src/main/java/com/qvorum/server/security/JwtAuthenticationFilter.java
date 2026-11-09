@@ -32,6 +32,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String PREFIX = "Bearer ";
 
+    /** Request attribute set when the token's session was closed by the system administrator. */
+    public static final String CLOSED_BY_ADMINISTRATOR = "qvorum.closedByAdministrator";
+
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final ClientRegistry clientRegistry;
@@ -47,12 +50,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith(PREFIX)) {
-            authenticate(header.substring(PREFIX.length()));
+            authenticate(header.substring(PREFIX.length()), request);
         }
         chain.doFilter(request, response);
     }
 
-    private void authenticate(String token) {
+    private void authenticate(String token, HttpServletRequest request) {
         JwtService.TokenContent content;
         try {
             content = jwtService.parse(token);
@@ -60,6 +63,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return; // invalid or expired token: stay anonymous
         }
         if (!clientRegistry.isConnected(content.clientId())) {
+            if (clientRegistry.wasClosedByAdministrator(content.clientId())) {
+                // Read by SecurityConfig to choose the 401 message.
+                request.setAttribute(CLOSED_BY_ADMINISTRATOR, Boolean.TRUE);
+            }
             return;
         }
         User user = userRepository.findById(content.userId()).orElse(null);

@@ -63,7 +63,9 @@ public class SecurityConfig {
                 .exceptionHandling(errors -> errors
                         .authenticationEntryPoint((request, response, e) ->
                                 writeError(response, HttpServletResponse.SC_UNAUTHORIZED,
-                                        "Please log in to continue."))
+                                        request.getAttribute(JwtAuthenticationFilter.CLOSED_BY_ADMINISTRATOR) != null
+                                                ? "Your session was closed by the administrator."
+                                                : "Please log in to continue."))
                         .accessDeniedHandler((request, response, e) ->
                                 writeError(response, HttpServletResponse.SC_FORBIDDEN,
                                         "You are not allowed to do this.")))

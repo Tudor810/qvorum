@@ -65,7 +65,7 @@ public class AdminConsole {
             System.out.println("Usage: disconnect <client id>  (see 'clients')");
             return;
         }
-        clientRegistry.disconnect(words[1]).ifPresentOrElse(
+        clientRegistry.forceDisconnect(words[1]).ifPresentOrElse(
                 c -> System.out.println("Disconnected " + c.email() + ". Their next request will be refused."),
                 () -> System.out.println("No connected client with id " + words[1]));
     }

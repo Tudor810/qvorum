@@ -38,6 +38,9 @@ class SecurityIntegrationTest {
     ClientRegistry clientRegistry;
 
     @Autowired
+    JwtService jwtService;
+
+    @Autowired
     RequestLogRepository requestLogRepository;
 
     @Test
@@ -93,16 +96,36 @@ class SecurityIntegrationTest {
     @Test
     void tokenStopsWorkingAfterForcedDisconnect() throws Exception {
         String token = login("resident@qvorum.test");
-        String clientId = clientRegistry.list().stream()
-                .filter(c -> c.email().equals("resident@qvorum.test"))
-                .reduce((first, second) -> second) // the most recent login
-                .orElseThrow()
-                .id();
 
-        clientRegistry.disconnect(clientId); // what the console's "disconnect" command does
+        // What the console's "disconnect <id>" command does.
+        clientRegistry.forceDisconnect(jwtService.parse(token).clientId());
 
         mvc.perform(get("/auth/me").header("Authorization", "Bearer " + token))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Your session was closed by the administrator."));
+    }
+
+    @Test
+    void invalidFieldsAreListedIn400() throws Exception {
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"not-an-email\",\"password\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid data."))
+                .andExpect(jsonPath("$.fields.email").value("Enter a valid email address."))
+                .andExpect(jsonPath("$.fields.password").value("Enter your password."));
+    }
+
+    @Test
+    void currentUserHasContractFields() throws Exception {
+        mvc.perform(get("/auth/me").header("Authorization", "Bearer " + login("resident@qvorum.test")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.associationId").isNumber())
+                .andExpect(jsonPath("$.apartmentId").isNumber())
+                .andExpect(jsonPath("$.mustChangePassword").value(false))
+                .andExpect(jsonPath("$.phone").hasJsonPath());
+        mvc.perform(get("/auth/me").header("Authorization", "Bearer " + login("admin@qvorum.test")))
+                .andExpect(jsonPath("$.associationId").isEmpty())
+                .andExpect(jsonPath("$.apartmentId").isEmpty());
     }
 
     @Test
