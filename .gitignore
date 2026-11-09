@@ -73,3 +73,10 @@ Thumbs.db
 # Server: uploaded photos
 server/uploads/
 uploads/
+
+# IntelliJ files created outside .idea
+server/modules.xml
+server/workspace.xml
+
+.claude
+docs/diagram-sources

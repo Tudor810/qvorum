@@ -1,27 +1,27 @@
-import { colors, fontSize, spacing, strings } from '@qvorum/shared';
-import { StyleSheet, Text, View } from 'react-native';
+import { strings } from '@qvorum/shared';
+import { View } from 'react-native';
+import { AppText } from '@/components/ui';
 import { LoginForm } from '@/features/auth';
+import { makeStyles } from '@/lib/theme';
 
 export default function Index() {
+  const styles = useStyles();
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{strings.app.name}</Text>
+      <AppText variant="display" color="primary">
+        {strings.app.name}
+      </AppText>
       <LoginForm />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xl,
-    padding: spacing.xl,
-    backgroundColor: colors.background,
+    gap: t.spacing.xl,
+    padding: t.spacing.xl,
+    backgroundColor: t.colors.background,
   },
-  title: {
-    fontSize: fontSize.xxl,
-    color: colors.text,
-  },
-});
+}));
